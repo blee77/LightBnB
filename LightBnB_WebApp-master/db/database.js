@@ -1,7 +1,5 @@
-
 const properties = require("./json/properties.json");
 const users = require("./json/users.json");
-
 
 const { Pool } = require('pg');
 
@@ -19,28 +17,26 @@ const pool = new Pool({
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithEmail = function (email) {
-  
-  const queryParams = [];
+
+  // const queryParams = [];
 
   let queryString = `
     SELECT * 
     FROM users
     WHERE users.email = $1
-    
   `;
 
-  queryParams.push(email);
+  // queryParams.push(email);
   // this is a promise
-  return pool.query(queryString, queryParams)
+  return pool.query(queryString, [email])
     .then((result) => {
+      console.log("Login User :", result.rows[0]);
+
       return result.rows[0];
     })
     .catch((err) => {
       console.log(err.message);
     });
-
-
-
 };
 
 /**
@@ -105,10 +101,33 @@ const addUser = function (user) {
  * @param {string} guest_id The id of the user.
  * @return {Promise<[{}]>} A promise to the reservations.
  */
-const getAllReservations = function (guest_id, limit = 10) {
-  return getAllProperties(null, 2);
-};
 
+// const getAllReservations = function (guest_id, limit = 10) {
+//   return getAllProperties(null, 2);
+// };
+
+const getAllReservations = function (guest_id, limit = 10) {
+
+  const queryString =
+    `SELECT reservations.id, properties.title, properties.cost_per_night, reservations.start_date, avg(rating) as average_rating
+  FROM reservations
+  JOIN properties ON reservations.property_id = properties.id
+  JOIN property_reviews ON properties.id = property_reviews.property_id
+  WHERE reservations.guest_id = $1
+  GROUP BY properties.id, reservations.id
+  ORDER BY reservations.start_date
+  LIMIT $2;`;
+
+  const values = [guest_id, limit];
+  console.log("guest_id:",guest_id);
+  return pool
+    .query(queryString, values)
+    .then(res => {
+      console.log("Reservations:",res.rows);
+      return res.rows;
+    })
+    .catch(err => console.error(err.stack));
+};
 
 /// Properties
 
@@ -119,8 +138,8 @@ const getAllReservations = function (guest_id, limit = 10) {
  * @return {Promise<[{}]>}  A promise to the properties.
  */
 const getAllProperties = function (options, limit = 10) {
-  
-  
+
+
   const queryParams = [];
 
   let queryString = `
