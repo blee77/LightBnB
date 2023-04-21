@@ -108,15 +108,26 @@ const addUser = function (user) {
 
 const getAllReservations = function (guest_id, limit = 10) {
 
+  // const queryString =
+  //   `SELECT reservations.id, properties.title, properties.cost_per_night, reservations.start_date, avg(rating) as average_rating
+  // FROM reservations
+  // JOIN properties ON reservations.property_id = properties.id
+  // JOIN property_reviews ON properties.id = property_reviews.property_id
+  // WHERE reservations.guest_id = $1
+  // GROUP BY properties.id, reservations.id
+  // ORDER BY reservations.start_date
+  // LIMIT $2;`;
+
   const queryString =
-    `SELECT reservations.id, properties.title, properties.cost_per_night, reservations.start_date, avg(rating) as average_rating
-  FROM reservations
-  JOIN properties ON reservations.property_id = properties.id
-  JOIN property_reviews ON properties.id = property_reviews.property_id
-  WHERE reservations.guest_id = $1
-  GROUP BY properties.id, reservations.id
-  ORDER BY reservations.start_date
-  LIMIT $2;`;
+    `SELECT properties.*, avg(property_reviews.rating) as average_rating
+  FROM properties
+  JOIN property_reviews ON properties.id = property_id
+  WHERE owner_id = $1
+  GROUP BY properties.id
+  ORDER BY cost_per_night
+  LIMIT $2`;
+
+
 
   const values = [guest_id, limit];
   console.log("guest_id:", guest_id);
@@ -146,7 +157,7 @@ const getAllProperties = function (options, limit = 10) {
   let queryString = `
     SELECT properties.*, avg(property_reviews.rating) as average_rating
     FROM properties
-    JOIN property_reviews ON properties.id = property_id
+    LEFT JOIN property_reviews ON properties.id = property_id
     `;
   // 3a city
   if (options.city) {
@@ -156,8 +167,8 @@ const getAllProperties = function (options, limit = 10) {
   //3b owner id
   console.log("owner.id", options);
   if (options.owner_id) {
-    queryParams.push(`%${options.owner_id}%`);
-    queryString += ` AND owner_id LIKE $${queryParams.length}`;
+    queryParams.push(`${options.owner_id}`);
+    queryString += ` WHERE owner_id = $${queryParams.length}`;
   }
   //3c min price
   if (options.minimum_price_per_night) {
@@ -169,7 +180,7 @@ const getAllProperties = function (options, limit = 10) {
     queryParams.push(`${options.maximum_price_per_night * 100}`);
     queryString += ` AND cost_per_night <= $${queryParams.length}`;
   }
-  queryString += `GROUP BY properties.id
+  queryString += ` GROUP BY properties.id 
  `;
   console.log("options", options);
   //3e min rating
@@ -198,12 +209,67 @@ const getAllProperties = function (options, limit = 10) {
  * @param {{}} property An object containing all of the property details.
  * @return {Promise<{}>} A promise to the property.
  */
+
+
+// function to add a new property to the database
+
 const addProperty = function (property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+  const query = `
+    INSERT INTO properties (owner_id, title, description, thumbnail_photo_url, cover_photo_url, cost_per_night, street, city, province, post_code, country, parking_spaces, number_of_bathrooms, number_of_bedrooms)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+    RETURNING *;
+  `;
+  const values = [
+    property.owner_id,
+    property.title,
+    property.description,
+    property.thumbnail_photo_url,
+    property.cover_photo_url,
+    property.cost_per_night,
+    property.street,
+    property.city,
+    property.province,
+    property.post_code,
+    property.country,
+    property.parking_spaces,
+    property.number_of_bathrooms,
+    property.number_of_bedrooms
+  ];
+
+  return pool.query(query, values)
+    .then(res => {
+      return res.rows[0];
+    })
+    .catch(err => console.error('Error executing query', err.stack));
 };
+
+// // example usage:
+// const property = {
+//   owner_id: 1,
+//   title: 'Cozy apartment in downtown',
+//   description: 'A lovely one-bedroom apartment in the heart of the city',
+//   thumbnail_photo_url: 'https://example.com/thumbnail.jpg',
+//   cover_photo_url: 'https://example.com/cover.jpg',
+//   cost_per_night: '100',
+//   street: '123 Main St',
+//   city: 'Anytown',
+//   province: 'ON',
+//   post_code: 'A1B 2C3',
+//   country: 'Canada',
+//   parking_spaces: 1,
+//   number_of_bathrooms: 1,
+//   number_of_bedrooms: 1
+// };
+
+
+
+
+// const addProperty = function (property) {
+//   const propertyId = Object.keys(properties).length + 1;
+//   property.id = propertyId;
+//   properties[propertyId] = property;
+//   return Promise.resolve(property);
+// };
 
 module.exports = {
   getUserWithEmail,
