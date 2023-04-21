@@ -29,7 +29,7 @@ router.post("/", (req, res) => {
 router.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
- 
+
   // return pool.query(`
   //     SELECT *
   //     FROM users
@@ -40,8 +40,8 @@ router.post("/login", (req, res) => {
 
   //     res.rows[0] || null;
   //   })
-    
-    database.getUserWithEmail(email)
+
+  database.getUserWithEmail(email)
     .then((user) => {
       console.log("user :", user);
       if (!user) {

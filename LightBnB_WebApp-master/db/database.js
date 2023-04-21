@@ -119,11 +119,11 @@ const getAllReservations = function (guest_id, limit = 10) {
   LIMIT $2;`;
 
   const values = [guest_id, limit];
-  console.log("guest_id:",guest_id);
+  console.log("guest_id:", guest_id);
   return pool
     .query(queryString, values)
     .then(res => {
-      console.log("Reservations:",res.rows);
+      console.log("Reservations:", res.rows);
       return res.rows;
     })
     .catch(err => console.error(err.stack));
@@ -137,34 +137,61 @@ const getAllReservations = function (guest_id, limit = 10) {
  * @param {*} limit The number of results to return.
  * @return {Promise<[{}]>}  A promise to the properties.
  */
+
+
 const getAllProperties = function (options, limit = 10) {
-
-
+  // 1
   const queryParams = [];
-
+  // 2
   let queryString = `
-    SELECT *
+    SELECT properties.*, avg(property_reviews.rating) as average_rating
     FROM properties
-    LIMIT $1
-  `;
-
+    JOIN property_reviews ON properties.id = property_id
+    `;
+  // 3a city
+  if (options.city) {
+    queryParams.push(`%${options.city}%`);
+    queryString += ` AND city LIKE $${queryParams.length} `;
+  }
+  //3b owner id
+  console.log("owner.id", options);
+  if (options.owner_id) {
+    queryParams.push(`%${options.owner_id}%`);
+    queryString += ` AND owner_id LIKE $${queryParams.length}`;
+  }
+  //3c min price
+  if (options.minimum_price_per_night) {
+    queryParams.push(`${options.minimum_price_per_night * 100}`);
+    queryString += ` AND cost_per_night >= $${queryParams.length}`;
+  }
+  //3d max price
+  if (options.maximum_price_per_night) {
+    queryParams.push(`${options.maximum_price_per_night * 100}`);
+    queryString += ` AND cost_per_night <= $${queryParams.length}`;
+  }
+  queryString += `GROUP BY properties.id
+ `;
+  console.log("options", options);
+  //3e min rating
+  if (options.minimum_rating) {
+    queryParams.push(options.minimum_rating);
+    queryString += ` HAVING avg(rating) >= $${queryParams.length}\n`;
+  }
+  // 4
   queryParams.push(limit);
-  // this is a promise
-  return pool.query(queryString, queryParams)
-    .then((result) => {
-      return result.rows;
-    })
-    .catch((err) => {
-      console.log(err.message);
-    });
-
-  // filler code 
-  // const limitedProperties = {};
-  // for (let i = 1; i <= limit; i++) {
-  //   limitedProperties[i] = properties[i];
-  // }
-  // return Promise.resolve(limitedProperties);
+  queryString += `
+    ORDER BY cost_per_night
+    LIMIT $${queryParams.length};
+    `;
+  // 5
+  console.log(queryString, queryParams);
+  // 6
+  return pool.query(queryString, queryParams).then((res) => res.rows);
 };
+
+
+
+
 
 /**
  * Add a property to the database
