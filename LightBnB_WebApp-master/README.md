@@ -1,5 +1,10 @@
 # LightBnB
 
+A simple multi-page Airbnb clone that uses a server-side javascript to display the information from queries to web pages via SQL queries. 
+
+ We will be able to apply our existing knowledge of complex SQL queries, database and ERD (entity relationship diagram) design to integrate the database with a Node backend.
+
+
 ## Project Structure
 
 ```
@@ -53,3 +58,26 @@
 * `routes` contains the router files which are responsible for any HTTP requests to `/users/something` or `/api/something`. 
 * `styles` contains all of the sass files. 
 * `server.js` is the entry point to the application. This connects the routes to the database.
+
+
+
+
+## Final Product
+
+# Screenshots
+
+!["Screenshot of My Reservations page"](docs/Reservations.png)
+!["Screenshot of Search page"](docs/Search.png)
+
+## Dependencies
+
+- Node.js
+- Express
+- PG
+- bcryptjs
+- cookie-session
+
+## Getting Started
+
+- Install all dependencies (using the `npm install` command).
+- Run the development web server using the `npm run local` command.

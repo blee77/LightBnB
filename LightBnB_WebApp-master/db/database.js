@@ -108,15 +108,7 @@ const addUser = function (user) {
 
 const getAllReservations = function (guest_id, limit = 10) {
 
-  // const queryString =
-  //   `SELECT reservations.id, properties.title, properties.cost_per_night, reservations.start_date, avg(rating) as average_rating
-  // FROM reservations
-  // JOIN properties ON reservations.property_id = properties.id
-  // JOIN property_reviews ON properties.id = property_reviews.property_id
-  // WHERE reservations.guest_id = $1
-  // GROUP BY properties.id, reservations.id
-  // ORDER BY reservations.start_date
-  // LIMIT $2;`;
+
 
   const queryString =
     `SELECT properties.*, avg(property_reviews.rating) as average_rating
@@ -243,33 +235,7 @@ const addProperty = function (property) {
     .catch(err => console.error('Error executing query', err.stack));
 };
 
-// // example usage:
-// const property = {
-//   owner_id: 1,
-//   title: 'Cozy apartment in downtown',
-//   description: 'A lovely one-bedroom apartment in the heart of the city',
-//   thumbnail_photo_url: 'https://example.com/thumbnail.jpg',
-//   cover_photo_url: 'https://example.com/cover.jpg',
-//   cost_per_night: '100',
-//   street: '123 Main St',
-//   city: 'Anytown',
-//   province: 'ON',
-//   post_code: 'A1B 2C3',
-//   country: 'Canada',
-//   parking_spaces: 1,
-//   number_of_bathrooms: 1,
-//   number_of_bedrooms: 1
-// };
 
-
-
-
-// const addProperty = function (property) {
-//   const propertyId = Object.keys(properties).length + 1;
-//   property.id = propertyId;
-//   properties[propertyId] = property;
-//   return Promise.resolve(property);
-// };
 
 module.exports = {
   getUserWithEmail,
