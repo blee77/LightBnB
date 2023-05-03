@@ -2,7 +2,7 @@
 
 A simple multi-page Airbnb clone that uses a server-side javascript to display the information from queries to web pages via SQL queries. 
 
- We will be able to apply our existing knowledge of complex SQL queries, database and ERD (entity relationship diagram) design to integrate the database with a Node backend.
+LightBnB Project is to design a database and use server-side JavaScript to display the information from queries to web pages. We will be able to apply our existing knowledge of complex SQL queries, database and ERD (entity relationship diagram) design to integrate the database with a Node backend.
 
 
 ## Project Structure
@@ -67,6 +67,8 @@ A simple multi-page Airbnb clone that uses a server-side javascript to display t
 # Screenshots
 
 !["Screenshot of My Reservations page"](docs/Reservations.png)
+
+
 !["Screenshot of Search page"](docs/Search.png)
 
 ## Dependencies
