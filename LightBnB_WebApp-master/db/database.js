@@ -143,18 +143,22 @@ const getAllProperties = function(options, limit = 10) {
   // 1
   const queryParams = [];
   // 2
+  //Need to find a query where there is no property review
+  // What if the join does not return anything
+  //outer join - make sure there is not property reviews returning
+
   let queryString = `
     SELECT properties.*, avg(property_reviews.rating) as average_rating, count(property_reviews.rating) as review_count
     FROM properties
-    JOIN property_reviews ON properties.id = property_id
+    LEFT OUTER JOIN property_reviews ON properties.id = property_id
     WHERE 1 = 1
     `;
 
-    // let queryString = `
-    // SELECT properties.*
-    // FROM properties
-    // WHERE 1 =1
-    // `;
+  // let queryString = `
+  // SELECT properties.*
+  // FROM properties
+  // WHERE 1 =1
+  // `;
 
     
   // let queryString = `
@@ -173,7 +177,7 @@ const getAllProperties = function(options, limit = 10) {
     queryString += ` AND city LIKE $${queryParams.length} `;
   }
   //3b owner id
- console.log('Owner ID:',options.owner_id);
+  console.log('Owner ID:',options.owner_id);
 
   if (options.owner_id) {
     queryParams.push(`${options.owner_id}`);
@@ -240,7 +244,7 @@ const addProperty = function(property) {
     property.description,
     property.thumbnail_photo_url,
     property.cover_photo_url,
-    property.cost_per_night,
+    property.cost_per_night * 100,
     property.street,
     property.city,
     property.province,
